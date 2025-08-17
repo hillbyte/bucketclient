@@ -22,6 +22,7 @@ export interface S3Config {
   accessKeyId: string;
   secretAccessKey: string;
   bucketName: string;
+  customDomain?: string;
 }
 
 export interface S3Item {
@@ -100,6 +101,7 @@ export function disconnect(): void {
   s3Config.set(null);
   isConnected.set(false);
   localStorage.removeItem("s3Config");
+  localStorage.removeItem("customDomain"); // Clear custom domain
   s3Items.set([]);
   currentPath.set("");
 }

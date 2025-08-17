@@ -6,6 +6,7 @@ export interface S3Credentials {
   accessKeyId: string;
   secretAccessKey: string;
   bucketName: string;
+  customDomain?: string;
 }
 
 const storedCredentials = localStorage.getItem('s3Credentials');
@@ -23,3 +24,15 @@ credentials.subscribe(value => {
 });
 
 export const isConnected = writable<boolean>(!!storedCredentials);
+
+// Custom domain settings
+const storedCustomDomain = localStorage.getItem('customDomain');
+export const customDomain = writable<string>(storedCustomDomain || '');
+
+customDomain.subscribe(value => {
+  if (value) {
+    localStorage.setItem('customDomain', value);
+  } else {
+    localStorage.removeItem('customDomain');
+  }
+});

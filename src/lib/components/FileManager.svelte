@@ -5,7 +5,7 @@
     import JSZip from "jszip";
     import { saveAs } from "file-saver";
 
-    import { credentials, isConnected } from "$lib/stores";
+    import { credentials, isConnected, customDomain } from "$lib/stores";
 
     // Remove MD5 calculation as it's not strictly necessary for delete operations
     const calculateMD5 = async (data: string): Promise<string> => {
@@ -91,6 +91,7 @@
     function disconnect() {
         credentials.set(null);
         isConnected.set(false);
+        customDomain.set(''); // Clear custom domain on disconnect
     }
 
     // Computed properties for filtered views
@@ -655,6 +656,25 @@
     function openShareModal(file: _Object) {
         fileToShare = file;
         showShareModal = true;
+    }
+
+    // Quick copy custom domain URL to clipboard
+    function quickCopyCustomDomainUrl(file: _Object) {
+        const domain = get(customDomain);
+        if (domain && file.Key) {
+            const cleanDomain = domain.endsWith('/') ? domain.slice(0, -1) : domain;
+            const customDomainLink = `${cleanDomain}/${file.Key}`;
+            
+            navigator.clipboard.writeText(customDomainLink).then(() => {
+                // Show success message (you can replace this with a toast notification if available)
+                const fileName = file.Key?.split('/').pop() || 'file';
+                console.log(`Custom domain URL copied: ${fileName}`);
+                // You could add a toast here: showToast(`Custom domain URL copied for ${fileName}`, 'success');
+            }).catch(err => {
+                console.error('Failed to copy to clipboard:', err);
+                // You could add an error toast here: showToast('Failed to copy URL', 'error');
+            });
+        }
     }
 
     async function handleCreateFolder(
@@ -1481,6 +1501,17 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
+                                <!-- Quick copy custom domain URL button (only show if custom domain is set) -->
+                                {#if $customDomain}
+                                    <button
+                                        on:click|stopPropagation={() =>
+                                            quickCopyCustomDomainUrl(object)}
+                                        class="text-subtext0 hover:text-green transition-colors"
+                                        title="Copy custom domain URL"
+                                        ><i class="fa-solid fa-link"
+                                        ></i></button
+                                    >
+                                {/if}
                                 <button
                                     on:click={() =>
                                         handleDownload(object, false)}
@@ -1618,6 +1649,17 @@
                             <div
                                 class="absolute bottom-2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
                             >
+                                <!-- Quick copy custom domain URL button (only show if custom domain is set) -->
+                                {#if $customDomain}
+                                    <button
+                                        on:click|stopPropagation={() =>
+                                            quickCopyCustomDomainUrl(object)}
+                                        class="text-subtext0 hover:text-green transition-colors p-1 bg-base/50 rounded"
+                                        title="Copy custom domain URL"
+                                        ><i class="fa-solid fa-link"
+                                        ></i></button
+                                    >
+                                {/if}
                                 <button
                                     on:click|stopPropagation={() =>
                                         handleDownload(object, false)}

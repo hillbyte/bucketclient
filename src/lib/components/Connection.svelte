@@ -1,13 +1,14 @@
 <script lang="ts">
     import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
-    import { credentials, isConnected } from "$lib/stores";
+    import { credentials, isConnected, customDomain } from "$lib/stores";
 
     let endpoint =
-        "https://minio-s3-api.ahbdesk.site";
-    let region = "us-east-1";
-    let accessKeyId = "objzYeOttMjrHnJHr6E0";
-    let secretAccessKey = "JAIZVX6pmWco0KbKf5nOTJM9evKVzfNnyM6a7GrY";
-    let bucketName = "ad-backup";
+        "";
+    let region = "";
+    let accessKeyId = "";
+    let secretAccessKey = "";
+    let bucketName = "";
+    let customDomainUrl = "";
     let isLoading = false;
     let error: string | null = null;
 
@@ -31,6 +32,7 @@
             accessKeyId,
             secretAccessKey,
             bucketName,
+            customDomain: customDomainUrl || undefined,
         };
 
         const s3 = new S3Client({
@@ -52,6 +54,10 @@
             );
             credentials.set(tempCredentials);
             isConnected.set(true);
+            // Save custom domain if provided
+            if (customDomainUrl) {
+                customDomain.set(customDomainUrl);
+            }
         } catch (e: any) {
             error = `Connection failed: ${e.message}`;
         } finally {
@@ -172,6 +178,26 @@
                                         required
                                         disabled={isLoading}
                                     />
+                                </div>
+
+                                <div class="space-y-1">
+                                    <label
+                                        for="customDomain"
+                                        class="block text-sm font-medium text-subtext1"
+                                    >
+                                        Custom Domain (Optional)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="customDomain"
+                                        bind:value={customDomainUrl}
+                                        placeholder="https://files.yourdomain.com"
+                                        class="w-full px-4 py-2 bg-surface0 border border-surface1 rounded-lg focus:ring-2 focus:ring-blue focus:border-transparent"
+                                        disabled={isLoading}
+                                    />
+                                    <p class="text-xs text-subtext0">
+                                        For public file sharing without expiry. Must be configured to serve files from your bucket.
+                                    </p>
                                 </div>
 
                                 <div
